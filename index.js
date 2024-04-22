@@ -32,14 +32,12 @@ async function run() {
 
         })
 
-        app.delete('users/:id', async(req, res) => {
+        app.get('/users/:id', async (req, res) => {
             const id = req.params.id;
-            console.log(id);
-            const query = { _id: new ObjectId (id) };
-            const result = await userConnection.deleteOne(query);
-            res.send(result);
+            const query = { _id: new ObjectId(id) }
+            const user = await userConnection.findOne(query)
+            res.send(user)
         })
-
 
         app.post('/users', async (req, res) => {
             const user = req.body;
@@ -48,8 +46,34 @@ async function run() {
             res.send(result)
 
         })
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const query = { _id: new ObjectId(id) };
+            const result = await userConnection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.put('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const user = req.body;
+            console.log(id, user)
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updateUser = {
+                $set: {
+                    name: user.name,
+                    email: user.email
+                }
+            };
+            const result = await userConnection.updateOne(filter, updateUser, options);
+            res.send(result)
+        })
+
+
+        // await client.db("admin").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
 
